@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: coinservice_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: coinservice
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - coinservice_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coinservice"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  coinservice:
+    build:
+      context: .
+      dockerfile: CoinService/Dockerfile
+    container_name: coinservice_app
+    restart: unless-stopped
+    environment:
+      # Подключение к БД (пароль из .env)
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=coinservice;Username=postgres;Password=${POSTGRES_PASSWORD:-password}"
+      # API ключ из .env
+      CoinApi__Key: ${COINAPI_KEY}
+      # ASP.NET Core
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - coinservice_network
+    volumes:
+      - ./logs:/app/logs
+
+networks:
+  coinservice_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
