@@ -1,0 +1,151 @@
+Вот API спецификация для CoinService:
+
+  ---
+  API Specification - CoinService
+
+  Base URL: /api
+
+  ---
+  1. Symbols (Торговые пары)
+
+  GET /api/symbols
+
+  Получить список всех доступных торговых пар.
+
+  Response 200:
+  {
+    "symbols": [
+      {
+        "symbol": "BTCUSDT",
+        "baseAsset": "BTC",
+        "quoteAsset": "USDT",
+        "description": "BTC / USDT",
+        "exchange": "BINANCE"
+      }
+    ]
+  }
+
+  ---
+  2. Candles (Свечи)
+
+  GET /api/candles
+
+  Получить исторические OHLCV свечи.
+
+  Query Parameters:
+  | Параметр   | Тип    | Обязательный | Описание                            |
+  |------------|--------|--------------|-------------------------------------|
+  | symbol     | string | Да           | Торговая пара (BTCUSDT)             |
+  | resolution | string | Нет          | Таймфрейм: 1, 5, 15, 30, 60, 240, D |
+  | from       | long   | Да           | Unix timestamp (секунды) - начало   |
+  | to         | long   | Да           | Unix timestamp (секунды) - конец    |
+
+  Ограничения: Максимум 365 дней
+
+  Response 200:
+  {
+    "bars": [
+      {
+        "time": 1702627200000,
+        "open": 42150.50,
+        "high": 42200.00,
+        "low": 42100.00,
+        "close": 42180.25,
+        "volume": 125.5
+      }
+    ],
+    "noData": false
+  }
+
+  ---
+  GET /api/candles/latest
+
+  Получить последнюю свечу.
+
+  Query Parameters:
+  | Параметр   | Тип    | Обязательный | Описание      |
+  |------------|--------|--------------|---------------|
+  | symbol     | string | Да           | Торговая пара |
+  | resolution | string | Нет          | Таймфрейм     |
+
+  Response 200:
+  {
+    "time": 1702627200000,
+    "open": 42150.50,
+    "high": 42200.00,
+    "low": 42100.00,
+    "close": 42180.25,
+    "volume": 125.5
+  }
+
+  ---
+  3. Indicators (Индикаторы)
+
+  GET /api/indicators/depth
+
+  Получить индикаторы глубины стакана по уровням.
+
+  Query Parameters:
+  | Параметр   | Тип    | Обязательный | Описание                                    |
+  |------------|--------|--------------|---------------------------------------------|
+  | symbol     | string | Да           | Торговая пара или категория                 |
+  | category   | string | Да           | COIN, TOTAL, TOTAL1, TOTAL2, TOTAL3, OTHERS |
+  | resolution | string | Нет          | Таймфрейм: 1, 5, 15, 30, 60, 240, D         |
+  | from       | long   | Да           | Unix timestamp (секунды)                    |
+  | to         | long   | Да           | Unix timestamp (секунды)                    |
+
+  Ограничения: Максимум 90 дней
+
+  Response 200:
+  {
+    "symbol": "BTCUSDT",
+    "category": "COIN",
+    "points": [
+      {
+        "time": 1702627200000,
+        "bid_1_5": 1250000.50,
+        "bid_3": 2500000.00,
+        "bid_5": 4200000.00,
+        "bid_8": 6800000.00,
+        "bid_15": 12500000.00,
+        "bid_30": 25000000.00,
+        "ask_1_5": 1180000.50,
+        "ask_3": 2400000.00,
+        "ask_5": 4000000.00,
+        "ask_8": 6500000.00,
+        "ask_15": 12000000.00,
+        "ask_30": 24000000.00
+      }
+    ]
+  }
+
+  ---
+  GET /api/indicators/funding
+
+  Получить данные по funding rate (заглушка).
+
+  Query Parameters:
+  | Параметр | Тип    | Описание       |
+  |----------|--------|----------------|
+  | symbol   | string | Торговая пара  |
+  | from     | long   | Unix timestamp |
+  | to       | long   | Unix timestamp |
+
+  Response 200:
+  {
+    "points": []
+  }
+
+  ---
+  Коды ошибок
+
+  | Код | Описание                   |
+  |-----|----------------------------|
+  | 400 | Неверные параметры запроса |
+  | 404 | Данные не найдены          |
+  | 500 | Внутренняя ошибка сервера  |
+
+  Формат ошибки:
+  {
+    "error": "описание ошибки"
+  }

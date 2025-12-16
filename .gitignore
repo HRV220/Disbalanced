@@ -1,0 +1,70 @@
+# =============================================
+# TradingPlatform - Git Ignore
+# =============================================
+
+# ======================
+# Environment files (IMPORTANT: contains secrets)
+# ======================
+.env
+.env.local
+.env.*.local
+.env.production
+# Keep example files
+!.env.example
+
+# ======================
+# Node.js / Frontend
+# ======================
+TradingView/node_modules/
+TradingView/.next/
+TradingView/.pnp
+TradingView/.pnp.js
+TradingView/npm-debug.log*
+TradingView/yarn-debug.log*
+TradingView/yarn-error.log*
+
+# ======================
+# .NET / Backend
+# ======================
+CoinService/**/bin/
+CoinService/**/obj/
+CoinService/**/*.user
+CoinService/**/*.userosscache
+CoinService/**/*.suo
+CoinService/.vs/
+
+# ======================
+# Logs
+# ======================
+logs/
+*.log
+
+# ======================
+# IDE / Editor
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ======================
+# Docker
+# ======================
+# Don't ignore docker-compose files
+# Ignore local overrides
+docker-compose.override.yml
+
+# ======================
+# Misc
+# ======================
+*.pdf
+coverage/
+.claude/

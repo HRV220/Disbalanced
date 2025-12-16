@@ -1,0 +1,118 @@
+# =============================================
+# TradingPlatform - Production Docker Compose
+# Server: 147.45.109.121
+# =============================================
+#
+# Использование:
+#   docker-compose -f docker-compose.production.yml up -d
+#   docker-compose -f docker-compose.production.yml logs -f
+#   docker-compose -f docker-compose.production.yml down
+#
+# =============================================
+
+services:
+  # =============================================
+  # PostgreSQL + TimescaleDB
+  # =============================================
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: coinservice_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: coinservice
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "127.0.0.1:5432:5432"  # Only localhost access for security
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./CoinService/init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - trading_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coinservice"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # =============================================
+  # CoinService Backend (.NET)
+  # =============================================
+  coinservice:
+    build:
+      context: ./CoinService
+      dockerfile: CoinService/Dockerfile
+    container_name: coinservice_app
+    restart: unless-stopped
+    environment:
+      # Database connection
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=coinservice;Username=postgres;Password=${POSTGRES_PASSWORD:-password}"
+      # CoinAPI key (НЕ ТРОГАТЬ)
+      CoinApi__Key: ${COINAPI_KEY}
+      # ASP.NET Core settings
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      # CORS - production origins
+      AllowedOrigins__0: http://147.45.109.121:3000
+      AllowedOrigins__1: http://147.45.109.121
+      AllowedOrigins__2: http://frontend:3000
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - trading_network
+    volumes:
+      - ./logs/coinservice:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # =============================================
+  # TradingView Frontend (Next.js)
+  # =============================================
+  frontend:
+    build:
+      context: ./TradingView
+      dockerfile: Dockerfile
+      args:
+        # URL API для сборки (вкомпилируется в клиентский код)
+        NEXT_PUBLIC_API_URL: http://147.45.109.121:5000
+    container_name: tradingview_frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Runtime переменные (для SSR)
+      BACKEND_URL: http://coinservice:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      coinservice:
+        condition: service_healthy
+    networks:
+      - trading_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# =============================================
+# Networks
+# =============================================
+networks:
+  trading_network:
+    driver: bridge
+
+# =============================================
+# Volumes
+# =============================================
+volumes:
+  postgres_data:
+    driver: local

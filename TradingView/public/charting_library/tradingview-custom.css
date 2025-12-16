@@ -1,0 +1,42 @@
+/* TradingView Custom Styles */
+
+/* Hide TradingView logo */
+.chart-controls-bar__btn--logo {
+  display: none !important;
+}
+
+/* Adjust header styles */
+.header-chart-panel {
+  background-color: #0a0b0d !important;
+  border-bottom: 1px solid #1e2129 !important;
+}
+
+/* Price scale styles */
+.pane-legend {
+  background-color: transparent !important;
+}
+
+/* Tooltip styles */
+.tooltip-3MtUfP2T {
+  background-color: #12141a !important;
+  border: 1px solid #1e2129 !important;
+}
+
+/* Scrollbar styles */
+.chart-page ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.chart-page ::-webkit-scrollbar-track {
+  background: #0a0b0d;
+}
+
+.chart-page ::-webkit-scrollbar-thumb {
+  background: #3a3f4b;
+  border-radius: 3px;
+}
+
+.chart-page ::-webkit-scrollbar-thumb:hover {
+  background: #4a5568;
+}
