@@ -1,0 +1,212 @@
+root@6016705-wd74101:/opt/Disbalanced# docker-compose -f docker-compose.production.yml up -d --build
+Building coinservice
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  1.754MB
+Step 1/16 : FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+ ---> d6ba41c97680
+Step 2/16 : WORKDIR /src
+ ---> Using cache
+ ---> 1d614eabb577
+Step 3/16 : COPY ["CoinService/CoinService.csproj", "CoinService/"]
+ ---> Using cache
+ ---> 5a0adc8db969
+Step 4/16 : COPY ["APIBricks.CoinAPI.MarketDataAPI.REST.V1/APIBricks.CoinAPI.MarketDataAPI.REST.V1.csproj", "APIBricks.CoinAPI.MarketDataAPI.REST.V1/"]
+ ---> Using cache
+ ---> eefca6e78830
+Step 5/16 : RUN dotnet restore "CoinService/CoinService.csproj"
+ ---> Using cache
+ ---> 137ea216d0eb
+Step 6/16 : COPY . .
+ ---> Using cache
+ ---> e7b96165dc9b
+Step 7/16 : WORKDIR "/src/CoinService"
+ ---> Using cache
+ ---> cd72cfc924f4
+Step 8/16 : RUN dotnet build "CoinService.csproj" -c Release -o /app/build
+ ---> Using cache
+ ---> 05b89bddfc75
+Step 9/16 : FROM build AS publish
+ ---> 05b89bddfc75
+Step 10/16 : RUN dotnet publish "CoinService.csproj" -c Release -o /app/publish /p:UseAppHost=false
+ ---> Using cache
+ ---> 9bef3e462d09
+Step 11/16 : FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+ ---> 5aa31677de8f
+Step 12/16 : WORKDIR /app
+ ---> Using cache
+ ---> b8ed19ed5566
+Step 13/16 : RUN mkdir -p /app/logs
+ ---> Using cache
+ ---> 7fe6b49fd911
+Step 14/16 : COPY --from=publish /app/publish .
+ ---> Using cache
+ ---> 42a73dbeff7a
+Step 15/16 : EXPOSE 8080
+ ---> Using cache
+ ---> a52901a1fbff
+Step 16/16 : ENTRYPOINT ["dotnet", "CoinService.dll"]
+ ---> Using cache
+ ---> 6173d8048608
+Successfully built 6173d8048608
+Successfully tagged disbalanced_coinservice:latest
+Building frontend
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  22.76MB
+Step 1/26 : FROM node:20-alpine AS deps
+ ---> 9992b59c17bf
+Step 2/26 : WORKDIR /app
+ ---> Using cache
+ ---> b8cf53d9925f
+Step 3/26 : COPY package.json package-lock.json ./
+ ---> 0d17a4398c19
+Step 4/26 : RUN npm ci --only=production=false
+ ---> Running in 93f9704302cc
+npm warn invalid config only="production=false" set in command line options
+npm warn invalid config Must be one of: null, prod, production
+npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 471 packages, and audited 472 packages in 3m
+
+163 packages are looking for funding
+  run `npm fund` for details
+
+4 vulnerabilities (3 high, 1 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+ ---> Removed intermediate container 93f9704302cc
+ ---> 0133e930fd63
+Step 5/26 : FROM node:20-alpine AS builder
+ ---> 9992b59c17bf
+Step 6/26 : WORKDIR /app
+ ---> Using cache
+ ---> b8cf53d9925f
+Step 7/26 : ARG NEXT_PUBLIC_API_URL=http://localhost:5000
+ ---> Using cache
+ ---> e6e00acd5e49
+Step 8/26 : COPY --from=deps /app/node_modules ./node_modules
+ ---> Using cache
+ ---> 1367d8d4c34c
+Step 9/26 : COPY . .
+ ---> Using cache
+ ---> 92932bde574c
+Step 10/26 : ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ ---> Using cache
+ ---> 0749367e81aa
+Step 11/26 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Using cache
+ ---> 798cbc5aeed4
+Step 12/26 : RUN npm run build
+ ---> Running in 35aa8736e8c8
+
+> disbalanced@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.15
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5)
+   Generating static pages (2/5)
+   Generating static pages (3/5)
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    498 B          94.4 kB
+├ ○ /_not-found                          873 B          88.1 kB
+└ ○ /charts                              4.45 kB        91.7 kB
++ First Load JS shared by all            87.2 kB
+  ├ chunks/117-786dd161cf050e2e.js       31.6 kB
+  ├ chunks/fd9d1056-0016ed4352a16d7b.js  53.6 kB
+  └ other shared chunks (total)          2.01 kB
+
+
+○  (Static)  prerendered as static content
+
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+ ---> Removed intermediate container 35aa8736e8c8
+ ---> af2b898cc4b4
+Step 13/26 : FROM node:20-alpine AS runner
+ ---> 9992b59c17bf
+Step 14/26 : WORKDIR /app
+ ---> Using cache
+ ---> b8cf53d9925f
+Step 15/26 : ENV NODE_ENV=production
+ ---> Running in f0452124eb10
+ ---> Removed intermediate container f0452124eb10
+ ---> 9825b5b31992
+Step 16/26 : ENV NEXT_TELEMETRY_DISABLED=1
+ ---> Running in 38407234fa4a
+ ---> Removed intermediate container 38407234fa4a
+ ---> ba86c247e359
+Step 17/26 : RUN addgroup --system --gid 1001 nodejs
+ ---> Running in 9629286b3f20
+ ---> Removed intermediate container 9629286b3f20
+ ---> e02a9f50ae72
+Step 18/26 : RUN adduser --system --uid 1001 nextjs
+ ---> Running in 10290028a499
+ ---> Removed intermediate container 10290028a499
+ ---> 49efc2f24250
+Step 19/26 : COPY --from=builder /app/public ./public
+ ---> 359b6caaa488
+Step 20/26 : COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+ ---> 81b370ed2934
+Step 21/26 : COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+ ---> a7b23d0572f6
+Step 22/26 : USER nextjs
+ ---> Running in 353f0d0e00ed
+ ---> Removed intermediate container 353f0d0e00ed
+ ---> 7e40bbb1185c
+Step 23/26 : EXPOSE 3000
+ ---> Running in b142aa5129e0
+ ---> Removed intermediate container b142aa5129e0
+ ---> b8cbf7d0b071
+Step 24/26 : ENV PORT=3000
+ ---> Running in c7fddc137bbb
+ ---> Removed intermediate container c7fddc137bbb
+ ---> 9dd89b83aaaf
+Step 25/26 : ENV HOSTNAME="0.0.0.0"
+ ---> Running in 395f5d93d54c
+ ---> Removed intermediate container 395f5d93d54c
+ ---> b9069920a639
+Step 26/26 : CMD ["node", "server.js"]
+ ---> Running in 46bc719a603a
+ ---> Removed intermediate container 46bc719a603a
+ ---> bd282e45cada
+Successfully built bd282e45cada
+Successfully tagged disbalanced_frontend:latest
+Creating coinservice_postgres ...
+Creating coinservice_postgres ... error
+
+ERROR: for coinservice_postgres  Cannot start service postgres: failed to set up container networking: driver failed programming external connectivity on endpoint coinservice_postgres (c734b383efe5a73d58744bc35c9b652b9891c9f958f6e0ac634e5afd22d3714e): failed to bind host port for 127.0.0.1:5432:172.18.0.2:5432/tcp: address already in use
+
+ERROR: for postgres  Cannot start service postgres: failed to set up container networking: driver failed programming external connectivity on endpoint coinservice_postgres (c734b383efe5a73d58744bc35c9b652b9891c9f958f6e0ac634e5afd22d3714e): failed to bind host port for 127.0.0.1:5432:172.18.0.2:5432/tcp: address already in use
+ERROR: Encountered errors while bringing up the project.
+root@6016705-wd74101:/opt/Disbalanced#    

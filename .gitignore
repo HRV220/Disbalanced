@@ -68,3 +68,11 @@ docker-compose.override.yml
 *.pdf
 coverage/
 .claude/
+
+# ======================
+# Ngrok
+# ======================
+ngrok.exe
+ngrok.yml
+ngrok.zip
+ngrok

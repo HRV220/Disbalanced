@@ -11,8 +11,8 @@ const nextConfig = {
   // Environment variables доступные на клиенте
   // =============================================
   env: {
-    NEXT_PUBLIC_API_URL:
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
+    // Пустая строка = относительные пути, запросы проксируются через Next.js rewrites
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "",
   },
 
   // =============================================
@@ -33,12 +33,9 @@ const nextConfig = {
   },
 
   // =============================================
-  // API Rewrites (опционально - проксирование через Next.js)
+  // API Rewrites - проксирование через Next.js
   // =============================================
   async rewrites() {
-    // Если хотите проксировать API через Next.js (избегает CORS)
-    // Раскомментируйте следующий блок:
-    /*
     const apiUrl = process.env.BACKEND_URL || 'http://coinservice:8080';
     return [
       {
@@ -54,8 +51,6 @@ const nextConfig = {
         destination: `${apiUrl}/status`,
       },
     ];
-    */
-    return [];
   },
 
   // =============================================
