@@ -1,7 +1,25 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Preset, PresetCreateInput } from "@/types/preset";
 import type { BidAskIndicatorConfig } from "@/types/indicator";
+
+// SSR-safe storage - returns undefined on server
+const safeStorage = {
+  getItem: (name: string) => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(name);
+  },
+  setItem: (name: string, value: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(name, value);
+    }
+  },
+  removeItem: (name: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(name);
+    }
+  },
+};
 
 interface PresetStoreState {
   // List of presets
@@ -135,6 +153,8 @@ export const usePresetStore = create<PresetStoreState>()(
     }),
     {
       name: "disbalanced-presets",
+      storage: createJSONStorage(() => safeStorage),
+      skipHydration: true, // Prevent hydration mismatch
     }
   )
 );

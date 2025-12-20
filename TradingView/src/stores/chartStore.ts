@@ -1,6 +1,24 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Timeframe, DrawingTool } from "@/types";
+
+// SSR-safe storage - returns undefined on server
+const safeStorage = {
+  getItem: (name: string) => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(name);
+  },
+  setItem: (name: string, value: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(name, value);
+    }
+  },
+  removeItem: (name: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(name);
+    }
+  },
+};
 
 interface ChartStoreState {
   // Current symbol and timeframe
@@ -88,6 +106,8 @@ export const useChartStore = create<ChartStoreState>()(
     }),
     {
       name: "disbalanced-chart",
+      storage: createJSONStorage(() => safeStorage),
+      skipHydration: true, // Prevent hydration mismatch
       partialize: (state) => ({
         symbol: state.symbol,
         exchange: state.exchange,
