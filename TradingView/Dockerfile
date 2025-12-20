@@ -42,12 +42,12 @@ RUN apk add --no-cache wget
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy public assets
-COPY --from=builder /app/public ./public
-
 # Copy standalone output
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy public assets INTO standalone folder (required for Next.js standalone mode)
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 
