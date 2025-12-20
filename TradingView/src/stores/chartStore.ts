@@ -106,7 +106,7 @@ export const useChartStore = create<ChartStoreState>()(
     }),
     {
       name: "disbalanced-chart",
-      storage: createJSONStorage(() => safeStorage),
+      //storage: createJSONStorage(() => safeStorage),
       skipHydration: true, // Prevent hydration mismatch
       partialize: (state) => ({
         symbol: state.symbol,
