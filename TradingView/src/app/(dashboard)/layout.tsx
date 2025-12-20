@@ -1,3 +1,5 @@
+"use client";
+
 // src/app/(dashboard)/layout.tsx
 import { Header } from "@/components/layout";
 
